@@ -51,20 +51,7 @@ const runAction = async () => {
     // https://github.com/actions/toolkit/tree/master/packages/github
     const octokit = new GitHub(confGithubToken);
 
-    // Create a new branch from the state in the branch which PR just got closed/merged.
-    // Creating a new branch so that it's guaranteed to have same set of changes that were merged with PR (payloadPullRequest)
-    // https://octokit.github.io/rest.js/#octokit-routes-git-create-ref
-    // https://developer.github.com/v3/git/refs/#create-a-reference
-    const {data: branchCreated} = await octokit.git.createRef({
-        owner: envOwner,
-        repo: envRepo,
-        ref: `refs/heads/pr_duplicator_${payloadFrom.ref}_${payloadPullRequestNumber}`,
-        sha: payloadPullRequest.head.sha
-    });
-
-    core.debug(`branchCreated - ${JSON.stringify(branchCreated, null, 2)}`);
-
-    // Create a PR from the freshly created branch to "to"
+    // Create a PR from the "from" branch to "to"
     // https://octokit.github.io/rest.js/#octokit-routes-pulls-create
     // https://developer.github.com/v3/pulls/#create-a-pull-request
     const {data: pullRequestCreated} = await octokit.pulls.create({
@@ -72,7 +59,7 @@ const runAction = async () => {
         repo: envRepo,
         title: `AUTO: PR-Duplicator - "${payloadPullRequest.title}".`,
         body: `This pull request is automatically created by GitHub Action PR Duplicator. Created from: ${payloadPullRequest.html_url}`,
-        head: branchCreated.ref,
+        head: payloadPullRequest.head.ref,
         base: confTo
     });
 
