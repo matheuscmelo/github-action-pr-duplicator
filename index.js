@@ -36,10 +36,6 @@ if (confPrAuthor && payloadPullRequestAuthor !== confPrAuthor) {
     return core.info(`SKIP! Skipping Action as the configured "pr-author" ("${confPrAuthor}") does not match the PR author in the payload ("${payloadPullRequestAuthor}")`);
 }
 
-if (!payloadPullRequest.merged) {
-    return core.warning(`SKIP! Skipping Action as the closed PR has not been merged! PR url ${payloadPullRequest.url}`);
-}
-
 const sendSlackMessage = async (message) => {
     return await superagent
         .post(confSlackIncomingWebhookUrl)
