@@ -36,6 +36,10 @@ if (confPrAuthor && payloadPullRequestAuthor !== confPrAuthor) {
     return core.info(`SKIP! Skipping Action as the configured "pr-author" ("${confPrAuthor}") does not match the PR author in the payload ("${payloadPullRequestAuthor}")`);
 }
 
+if (!payloadPullRequest.merged) {
+    return core.warning(`SKIP! Skipping Action as the closed PR has not been merged! PR url ${payloadPullRequest.url}`);
+}
+
 const sendSlackMessage = async (message) => {
     return await superagent
         .post(confSlackIncomingWebhookUrl)
@@ -55,7 +59,7 @@ const runAction = async () => {
         owner: envOwner,
         repo: envRepo,
         ref: `refs/heads/pr_duplicator_${payloadFrom.ref}_${payloadPullRequestNumber}`,
-        sha: payloadPullRequest.merge_commit_sha
+        sha: payloadPullRequest.head.sha
     });
 
     core.debug(`branchCreated - ${JSON.stringify(branchCreated, null, 2)}`);
